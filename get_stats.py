@@ -121,24 +121,24 @@ data_store = get_info()
 # In[122]:
 
 dt =  datetime.datetime.now()
-file_name = "./files/ooi_status_"+ str(dt)+".json"
+file_name = "./webcontent/files/ooi_status_"+ str(dt)+".json"
 print file_name
 
 with open(file_name, 'w') as outfile:
     json.dump(data_store, outfile, indent=2)
 
-outline_file_name = "./files/current.json"
+outline_file_name = "./webcontent/files/current.json"
 outline_dict = [file_name]
 with open(outline_file_name, 'w') as outfile:
     json.dump(outline_dict, outfile, indent=2)
     
 
-with open('./files/outline.json') as data_file:    
+with open('./webcontent/files/outline.json') as data_file:    
     data = json.load(data_file)
         
 data.append(file_name)    
 
-outline_file_name = "./files/outline.json"
+outline_file_name = "./webcontent/files/outline.json"
 outline_dict = data
 with open(outline_file_name, 'w') as outfile:
     json.dump(outline_dict, outfile, indent=2)
