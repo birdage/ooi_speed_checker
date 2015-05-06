@@ -1,1 +1,1 @@
-/Users/rpsdev/.virtualenvs/work/bin/python get_stats.py
+python get_stats.py
