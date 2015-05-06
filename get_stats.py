@@ -122,13 +122,14 @@ data_store = get_info()
 
 dt =  datetime.datetime.now()
 file_name = "./webcontent/files/ooi_status_"+ str(dt)+".json"
+file_name2 = "./files/ooi_status_"+ str(dt)+".json"
 print file_name
 
 with open(file_name, 'w') as outfile:
     json.dump(data_store, outfile, indent=2)
 
 outline_file_name = "./webcontent/files/current.json"
-outline_dict = [file_name]
+outline_dict = [file_name2]
 with open(outline_file_name, 'w') as outfile:
     json.dump(outline_dict, outfile, indent=2)
     
@@ -136,7 +137,7 @@ with open(outline_file_name, 'w') as outfile:
 with open('./webcontent/files/outline.json') as data_file:    
     data = json.load(data_file)
         
-data.append(file_name)    
+data.append(file_name2)    
 
 outline_file_name = "./webcontent/files/outline.json"
 outline_dict = data
