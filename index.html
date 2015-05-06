@@ -1,0 +1,159 @@
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<link href="//bootswatch.com/yeti/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+<script src="//code.jquery.com/jquery.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
+  
+  <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="">OOI Status Page</h1>          
+          <h4 id="head-file-list"></h4>          
+        </div>
+      </div>
+      <div class="row clearfix">
+          <div class="col-md-12 column">
+              <div id="status-header" class="panel">
+                <div class="panel-heading">
+                  <h3 id="status-text" class="panel-title">                                        
+                  </h3>
+                </div>                
+              </div>
+            
+
+              <div class="row clearfix">
+                  <div class="col-md-12 column">
+                      <div id="ooi-list-items" class="list-group">                         
+                          
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+<script>
+  $( document ).ready(function() {
+    console.log( "ready!" );
+  });
+
+  $.getJSON( "./files/outline.json", function( file_list ) {
+    $('#head-file-list').html('Recent Status <span class="badge">'+file_list.length+' Files Available</span>');
+  });
+
+  //get the file list
+  $.getJSON( "./files/current.json", function( file_list ) {
+    //get the data    
+    $.getJSON( file_list[0], function( data ) {
+      //loop through rows
+      var file_datetime = moment(file_list[0].split("/").pop().split("_").pop().split(".")[0]);
+      var current_datetime = moment();
+      var minutes_diff = current_datetime.diff(file_datetime, 'minutes')
+
+      var overallStatusGood = true
+      //OUTLINE
+      $.each(data.outline, function( index, row ) { 
+        if (row.status_code!=200){
+          overallStatusGood = false
+        }
+        $('#ooi-list-items').append(createListItem(row));
+      });
+      //ASSETS
+      $.each(data.assets, function( index, row ) { 
+        if (row.status_code!=200){
+          overallStatusGood = false
+        }
+        $('#ooi-list-items').append(createListItem(row));
+      });
+
+      if (overallStatusGood){
+        $('#status-header').addClass('panel-success')
+        $('#status-text').html('All Systems Operational <small class="pull-right">Refreshed '+minutes_diff+' minutes ago</small>')
+      }else{
+        $('#status-header').addClass('panel-danger')
+        $('#status-text').html('Not All Systems Operational <small class="pull-right">Refreshed '+minutes_diff+' minutes ago</small>')
+      }
+    });
+  });
+
+  $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+  function createProgressBar(value,total,name){
+    var per = (value/total)*100
+    bar= '<div style="height:25px"class="progress">'
+    bar+=  '<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: '+per+'%;" data-toggle="tooltip" data-placement="top" title="'+value+" out of "+total+'">'      
+    bar+= name 
+    bar+= '</div>'
+    bar+= '</div>'
+
+    return bar
+  }
+  function createListItem(row){
+    var status = row.status_code
+    var name = row.name
+    var time = row.time
+
+
+    var url = row.url
+    var rowType = row['type']
+    var contentRow = ""
+
+    var rowTypeInfo = ""
+    if (rowType == "outline"){
+      rowTypeInfo = 'Outline'
+    }else if(rowType == "assets"){
+      rowTypeInfo = 'Assets'
+      var stats = row.stats
+      contentRow+="<div style='padding-top:10px;padding-bottom:10px'>"
+      
+      contentRow+='<div class="well" style="margin-bottom:5px;">'
+      contentRow+=createProgressBar(stats.assets_count,stats.total,"Asset(s)")
+      contentRow+=createProgressBar(stats.instrument_count,stats.total,"Instrument(s)")      
+      if ((stats.assets_count + stats.instrument_count) != stats.total){
+        contentRow+= '<span class="pull-right label label-warning">Assets Not Accounted For</span>'
+      }else{
+        contentRow+= '<span class="pull-right label label-success">All Assests Accounted For</span>'        
+      }
+      //contentRow+=createProgressBar(stats['hasll_count'],stats.total,"Has Lat Lon")
+      contentRow+= "</div>"
+
+      
+    }else{
+      rowTypeInfo = 'N/A'
+    }
+    rowTypeInfo+= " : " + name
+ 
+    var urlRow = "<small><a href='"+url+"'>"+url+"</a></small>"
+    if (time > 0){
+      rowTypeInfo+= '<span style="margin-left:10px" class="pull-right label label-info">'+time.toFixed(2)+' seconds</span>'
+    }
+    
+
+    if (status == 200){
+      var statusRow = '<h4><span class="label label-success">OK</span></h4>'
+    }else if(status > 200 && status < 405){
+      var statusRow = '<h4><span class="label label-danger">ERROR</span></h4>'
+    }else if(status == ""){
+      var statusRow = '<h4><span class="label label-danger">ERROR</span></h4>'
+    }else{
+      var statusRow = '<h4><span class="label label-default">UNKNOWN</span></h4>'
+    }
+
+    var row = '<div class="list-group-item">'+
+        '<h4 class="list-group-item-heading">'+
+            rowTypeInfo+
+            '<a href="#"  data-toggle="tooltip" data-placement="right" title="'+row.date+'">'+
+              '<i style="padding-left:5px;" class="fa fa-question-circle"></i>'+
+            '</a>'+
+        '</h4>'+
+        urlRow+
+        contentRow+
+        '<p style="padding-top:10px" class="list-group-item-text">'+
+            statusRow+
+        '</p>'+
+    '</div>'
+    return row
+  }
+
+</script>
+  
